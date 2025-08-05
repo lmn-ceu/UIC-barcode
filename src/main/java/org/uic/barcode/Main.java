@@ -77,6 +77,19 @@ public class Main {
         System.out.println("");
         // We get the right activated days, the implicit timezone conversion
         // doesn't change anything since it UTC to UTC
+
+        // Output:
+        // Activated days before encoding:
+        // 2017-12-01T00:00:00Z
+        // 2018-01-01T00:00:00Z
+        //
+        // Decoded activated days using UTC+1 timezone
+        // 2017-11-30T23:00:00Z
+        // 2017-12-31T23:00:00Z
+        //
+        // Decoded activated days using UTC timezone
+        // 2017-12-01T00:00:00Z
+        // 2018-01-01T00:00:00Z
     }
 
     private static byte[] getEncoded(final IUicRailTicket ticket)
