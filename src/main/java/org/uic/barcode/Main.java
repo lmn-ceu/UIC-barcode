@@ -138,7 +138,7 @@ public class Main {
 
         for (int i = 0; i < originalDates.size(); i++) {
             long originalMsSinceEpoch = originalDates.get(i).getTime();
-            long decodedMsSinceEpoch = originalDates.get(i).getTime();
+            long decodedMsSinceEpoch = decodedDates.get(i).getTime();
 
             boolean areTheSameDates = originalDates.get(i).equals(decodedDates.get(i));
 
