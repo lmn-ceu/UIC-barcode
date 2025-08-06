@@ -11,6 +11,8 @@ import java.security.Security;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HexFormat;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -73,23 +75,14 @@ public class Main {
                 .ifPresent(doc -> ((IOpenTicket) doc).getActivatedDays()
                         .stream()
                         .map(Date::toInstant)
-                        .forEach(System.out::println));
+                        .peek(System.out::println));
         System.out.println("");
-        // We get the right activated days, the implicit timezone conversion
-        // doesn't change anything since it UTC to UTC
 
-        // Output:
-        // Activated days before encoding:
-        // 2017-12-01T00:00:00Z
-        // 2018-01-01T00:00:00Z
-        //
-        // Decoded activated days using UTC+1 timezone
-        // 2017-11-30T23:00:00Z
-        // 2017-12-31T23:00:00Z
-        //
-        // Decoded activated days using UTC timezone
-        // 2017-12-01T00:00:00Z
-        // 2018-01-01T00:00:00Z
+        IOpenTicket decodedParisOpenTicket = (IOpenTicket) decodedParis.getDocumentData().stream().findFirst().get();
+        IOpenTicket decodedUtcOpenTicket = (IOpenTicket) decodedUtc.getDocumentData().stream().findFirst().get();
+
+        compareActivatedDays("Before encoding date vs Encoded in Paris tz", openTicket, decodedParisOpenTicket);
+        compareActivatedDays("Before encoding date vs Encoded in UTC tz", openTicket, decodedUtcOpenTicket);
     }
 
     private static byte[] getEncoded(final IUicRailTicket ticket)
@@ -120,5 +113,27 @@ public class Main {
 
         IUicRailTicket ticket = decoder.getStaticFrame().getuFlex().getTicket();
         return ticket;
+    }
+
+    private static void compareActivatedDays(String label, IOpenTicket original, IOpenTicket decoded) {
+        System.out.println("Comparison: " + label);
+        List<Date> originalDates = original.getActivatedDays().stream().toList();
+        List<Date> decodedDates = decoded.getActivatedDays().stream().toList();
+
+        // To print the date in UTC format (only related to displaying things)
+        List<Instant> originalInstants = originalDates.stream().map(Date::toInstant).toList();
+        List<Instant> decodedInstants = decoded.getActivatedDays().stream().map(Date::toInstant).toList();
+
+        for (int i = 0; i < originalInstants.size(); i++) {
+            Instant originalInstant = originalInstants.get(i);
+            Instant decodedInstant = decodedInstants.get(i);
+            long diffSeconds = decodedInstant.getEpochSecond() - originalInstant.getEpochSecond();
+
+            boolean areTheSameDates = originalDates.get(i).equals(decodedDates.get(i));
+
+            System.out.printf("Are the same dates: %s | Original: %s | Decoded: %s | Difference: %d hours%n",
+                    areTheSameDates, originalInstant, decodedInstant, diffSeconds / 3600);
+        }
+        System.out.println();
     }
 }
